@@ -5,6 +5,7 @@
 ## Version: @project-version@
 ## SavedVariables: BarCheckDB
 ## X-License: MIT
+## X-Curse-Project-ID: 1798311
 ## IconTexture: Interface\Icons\INV_Misc_Note_01
 
 Dungeons.lua
