@@ -1,0 +1,22 @@
+name: Release Bar Check
+
+# Runs only when you push a version tag, like v1.2.0 or v1.2.0-beta
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # lets it create the GitHub release
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}         # CurseForge
+      WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }} # Wago (skipped if not set)
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}     # provided by GitHub automatically
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: BigWigsMods/packager@v2

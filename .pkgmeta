@@ -1,0 +1,9 @@
+package-as: BarCheck
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - SETUP.md
+  - screenshots
