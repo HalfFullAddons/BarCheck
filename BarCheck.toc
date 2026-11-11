@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: Bar Check
+## Notes: A Warcraft-style progress card for your character. Type /bc, snip it, paste it into Discord.
+## Author: Jim
+## Version: @project-version@
+## SavedVariables: BarCheckDB
+## X-License: MIT
+## IconTexture: Interface\Icons\INV_Misc_Note_01
+
+Dungeons.lua
+BarCheck.lua

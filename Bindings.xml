@@ -1,0 +1,5 @@
+<Bindings>
+    <Binding name="BARCHECK_TOGGLE" header="BARCHECK">
+        BarCheck_Toggle()
+    </Binding>
+</Bindings>

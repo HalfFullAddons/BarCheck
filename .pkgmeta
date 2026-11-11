@@ -7,3 +7,4 @@ manual-changelog:
 ignore:
   - SETUP.md
   - screenshots
+  - README.md
