@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Bar Check
 ## Notes: A Warcraft-style progress card for your character. Type /bc, snip it, paste it into Discord.
-## Author: Jim
+## Author: HalfFullAddons
 ## Version: @project-version@
 ## SavedVariables: BarCheckDB
 ## X-License: MIT
