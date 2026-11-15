@@ -631,7 +631,7 @@ local function build()
         return b
     end
     ui.charBtn = mkBtn("Characters", 100, 8, function() if BarCheck_ShowChars then BarCheck_ShowChars() end end)
-    ui.shoutBtn = mkBtn("Bar Check!", 90, 112, function() if BarCheck_Shout then BarCheck_Shout() end end)
+    ui.shoutBtn = mkBtn("Bar Check!", 90, 112, function() if BarCheck_ShoutMenu then BarCheck_ShoutMenu() end end)
     ui.optBtn = mkBtn("Options", 74, 206, function() if BarCheck_Options then BarCheck_Options() end end)
     ui.copyBtn = mkBtn("Copy Text", 84, 284, function() if BarCheck_CopyText then BarCheck_CopyText() end end)
 end
@@ -1102,13 +1102,24 @@ function BarCheck_Shout(channel)
     end
     if cur ~= "" then lines[#lines + 1] = cur end
     local ch = channel and channel:upper() or chatChannel()
-    -- /say and /yell from an addon are blocked by the game outside instances, so when you are
-    -- on your own the text goes into your chat box and you press Enter yourself
-    if ch == "SAY" or type(SendChatMessage) ~= "function" then
+    if ch == "PARTY" then   -- "party" means whatever group you are in (party, raid or instance group)
+        if IsInGroup and LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then ch = "INSTANCE_CHAT"
+        elseif IsInRaid and IsInRaid() then ch = "RAID"
+        elseif not (IsInGroup and IsInGroup()) then
+            print("Bar Check: you are not in a party or raid.")
+            return
+        end
+    elseif ch == "GUILD" and IsInGuild and not IsInGuild() then
+        print("Bar Check: you are not in a guild.")
+        return
+    end
+    -- /say and /yell from an addon are blocked by the game outside instances, so the text goes
+    -- into your chat box and you press Enter yourself
+    if ch == "SAY" or ch == "YELL" or type(SendChatMessage) ~= "function" then
         local first = lines[1] or ""
         if ChatFrame_OpenChat then
-            ChatFrame_OpenChat("/s " .. (first:gsub("|", "/")))
-            print("Bar Check: your line is in the chat box. Press Enter to say it, or Esc to cancel.")
+            ChatFrame_OpenChat((ch == "YELL" and "/y " or "/s ") .. (first:gsub("|", "/")))
+            print("Bar Check: your line is in the chat box. Press Enter to " .. (ch == "YELL" and "yell" or "say") .. " it, or Esc to cancel.")
         else
             print(first)
         end
@@ -1122,6 +1133,47 @@ function BarCheck_Shout(channel)
         end
     end
     print("Bar Check: sent to " .. ch:lower():gsub("_", " ") .. ".")
+end
+
+-- small pick-a-chat menu under the Bar Check! button
+local shoutMenu
+local SHOUT_CHOICES = { { "Say", "SAY" }, { "Guild", "GUILD" }, { "Yell", "YELL" }, { "Party", "PARTY" } }
+function BarCheck_ShoutMenu()
+    if not card or not ui.shoutBtn then return end
+    if not shoutMenu then
+        local m = CreateFrame("Frame", "BarCheckShoutMenu", card, BackdropTemplateMixin and "BackdropTemplate" or nil)
+        shoutMenu = m
+        m:SetSize(110, 10 + #SHOUT_CHOICES * 24)
+        m:SetFrameStrata("FULLSCREEN_DIALOG")
+        m:EnableMouse(true)
+        if m.SetBackdrop then
+            m:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", tile = true, tileSize = 16, edgeSize = 14, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+            if m.SetBackdropBorderColor then m:SetBackdropBorderColor(0.9, 0.75, 0.35, 1) end
+        end
+        local shade = m:CreateTexture(nil, "BACKGROUND", nil, 1)
+        shade:SetPoint("TOPLEFT", 3, -3)
+        shade:SetPoint("BOTTOMRIGHT", -3, 3)
+        if shade.SetColorTexture then shade:SetColorTexture(0.03, 0.03, 0.06, 0.92) end
+        local head = m:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        head:SetPoint("TOP", 0, -6)
+        head:SetText("Post to:")
+        m:SetHeight(26 + #SHOUT_CHOICES * 24)
+        for i, c in ipairs(SHOUT_CHOICES) do
+            local b = CreateFrame("Button", nil, m, "UIPanelButtonTemplate")
+            b:SetSize(96, 22)
+            b:SetPoint("TOP", 0, -20 - (i - 1) * 24)
+            b:SetText(c[1])
+            b:SetScript("OnClick", function() m:Hide(); BarCheck_Shout(c[2]) end)
+        end
+        m:Hide()
+    end
+    if shoutMenu:IsShown() then
+        shoutMenu:Hide()
+    else
+        shoutMenu:ClearAllPoints()
+        shoutMenu:SetPoint("TOPLEFT", ui.shoutBtn, "BOTTOMLEFT", 0, -2)
+        shoutMenu:Show()
+    end
 end
 
 -- plain text of the card on screen, pre-selected in a box so it can be copied with Ctrl+C
